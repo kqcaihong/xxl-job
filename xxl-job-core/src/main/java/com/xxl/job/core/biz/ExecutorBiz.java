@@ -5,6 +5,7 @@ import com.xxl.job.core.biz.model.*;
 /**
  * Created by xuxueli on 17/3/1.
  */
+// 执行器业务实现
 public interface ExecutorBiz {
 
     /**

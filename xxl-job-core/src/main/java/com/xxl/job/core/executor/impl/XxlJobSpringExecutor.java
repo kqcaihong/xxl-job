@@ -27,6 +27,7 @@ public class XxlJobSpringExecutor extends XxlJobExecutor implements ApplicationC
     private static final Logger logger = LoggerFactory.getLogger(XxlJobSpringExecutor.class);
 
 
+    // 当所有单例bean初始化完成后，Spring会调用实现了该接口的bean的afterSingletonsInstantiated()方法
     // start
     @Override
     public void afterSingletonsInstantiated() {
@@ -35,6 +36,7 @@ public class XxlJobSpringExecutor extends XxlJobExecutor implements ApplicationC
         /*initJobHandlerRepository(applicationContext);*/
 
         // init JobHandler Repository (for method)
+        // 扫描@XxlJob的方法，包装成MethodJobHandler对象，添加到jobHandlerRepository的Map中
         initJobHandlerMethodRepository(applicationContext);
 
         // refresh GlueFactory
@@ -48,6 +50,7 @@ public class XxlJobSpringExecutor extends XxlJobExecutor implements ApplicationC
         }
     }
 
+    // 重写destroy()方法，可以在Spring容器销毁bean时进行回调执行，确保业务资源的优雅释放
     // destroy
     @Override
     public void destroy() {
@@ -77,6 +80,7 @@ public class XxlJobSpringExecutor extends XxlJobExecutor implements ApplicationC
         }
     }*/
 
+    // 扫描@XxlJob的方法
     private void initJobHandlerMethodRepository(ApplicationContext applicationContext) {
         if (applicationContext == null) {
             return;

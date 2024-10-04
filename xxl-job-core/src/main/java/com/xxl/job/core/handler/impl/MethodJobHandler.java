@@ -10,6 +10,7 @@ import java.lang.reflect.Method;
 public class MethodJobHandler extends IJobHandler {
 
     private final Object target;
+    // 执行业务逻辑
     private final Method method;
     private Method initMethod;
     private Method destroyMethod;
@@ -26,6 +27,7 @@ public class MethodJobHandler extends IJobHandler {
     public void execute() throws Exception {
         Class<?>[] paramTypes = method.getParameterTypes();
         if (paramTypes.length > 0) {
+            // 反射执行任务体
             method.invoke(target, new Object[paramTypes.length]);       // method-param can not be primitive-types
         } else {
             method.invoke(target);

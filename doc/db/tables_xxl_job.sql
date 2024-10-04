@@ -7,6 +7,7 @@ use `xxl_job`;
 
 SET NAMES utf8mb4;
 
+-- 执行器配置
 CREATE TABLE `xxl_job_info` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `job_group` int(11) NOT NULL COMMENT '执行器主键ID',
@@ -35,6 +36,7 @@ CREATE TABLE `xxl_job_info` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+-- 日志
 CREATE TABLE `xxl_job_log` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT,
   `job_group` int(11) NOT NULL COMMENT '执行器主键ID',
@@ -78,6 +80,7 @@ CREATE TABLE `xxl_job_logglue` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+-- 注册表，MySQL8.0+下会报错：索引过长
 CREATE TABLE `xxl_job_registry` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `registry_group` varchar(50) NOT NULL,
@@ -88,6 +91,7 @@ CREATE TABLE `xxl_job_registry` (
   KEY `i_g_k_v` (`registry_group`,`registry_key`,`registry_value`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+-- 应用表
 CREATE TABLE `xxl_job_group` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `app_name` varchar(64) NOT NULL COMMENT '执行器AppName',
@@ -98,6 +102,7 @@ CREATE TABLE `xxl_job_group` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+-- 用户
 CREATE TABLE `xxl_job_user` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `username` varchar(50) NOT NULL COMMENT '账号',
@@ -108,6 +113,7 @@ CREATE TABLE `xxl_job_user` (
   UNIQUE KEY `i_username` (`username`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+-- 调度中心锁
 CREATE TABLE `xxl_job_lock` (
   `lock_name` varchar(50) NOT NULL COMMENT '锁名称',
   PRIMARY KEY (`lock_name`)

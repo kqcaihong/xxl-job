@@ -9,6 +9,7 @@ import com.xxl.job.core.util.XxlJobRemotingUtil;
  *
  * @author xuxueli 2017-07-28 22:14:52
  */
+// 向执行器发送http请求
 public class ExecutorBizClient implements ExecutorBiz {
 
     public ExecutorBizClient() {
@@ -23,6 +24,7 @@ public class ExecutorBizClient implements ExecutorBiz {
         }
     }
 
+    // 执行器地址
     private String addressUrl ;
     private String accessToken;
     private int timeout = 3;

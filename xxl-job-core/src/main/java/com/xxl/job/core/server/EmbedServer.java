@@ -68,9 +68,11 @@ public class EmbedServer {
                                 @Override
                                 public void initChannel(SocketChannel channel) throws Exception {
                                     channel.pipeline()
+                                        // 90秒没有读写，则关闭连接
                                             .addLast(new IdleStateHandler(0, 0, 30 * 3, TimeUnit.SECONDS))  // beat 3N, close if idle
                                             .addLast(new HttpServerCodec())
                                             .addLast(new HttpObjectAggregator(5 * 1024 * 1024))  // merge request & reponse to FULL
+                                        // 处理调度平台的请求
                                             .addLast(new EmbedHttpServerHandler(executorBiz, accessToken, bizThreadPool));
                                 }
                             })
@@ -130,8 +132,10 @@ public class EmbedServer {
     public static class EmbedHttpServerHandler extends SimpleChannelInboundHandler<FullHttpRequest> {
         private static final Logger logger = LoggerFactory.getLogger(EmbedHttpServerHandler.class);
 
+        // 业务实现
         private ExecutorBiz executorBiz;
         private String accessToken;
+        // 线程池
         private ThreadPoolExecutor bizThreadPool;
 
         public EmbedHttpServerHandler(ExecutorBiz executorBiz, String accessToken, ThreadPoolExecutor bizThreadPool) {
@@ -140,6 +144,7 @@ public class EmbedServer {
             this.bizThreadPool = bizThreadPool;
         }
 
+        // 异步处理请求
         @Override
         protected void channelRead0(final ChannelHandlerContext ctx, FullHttpRequest msg) throws Exception {
             // request parse
@@ -181,6 +186,7 @@ public class EmbedServer {
             }
 
             // services mapping
+            // url分发
             try {
                 switch (uri) {
                     case "/beat":

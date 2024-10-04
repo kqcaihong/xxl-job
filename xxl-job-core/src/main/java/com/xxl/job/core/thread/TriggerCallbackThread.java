@@ -10,22 +10,25 @@ import com.xxl.job.core.executor.XxlJobExecutor;
 import com.xxl.job.core.log.XxlJobFileAppender;
 import com.xxl.job.core.util.FileUtil;
 import com.xxl.job.core.util.JdkSerializeTool;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Created by xuxueli on 16/7/22.
  */
+// 执行完毕后异步回调调度平台，基于阻塞队列实现。有两个守护线程：首次回调线程、失败重试线程
+// 批量回调，通知到每一个调度平台实例
+// 回调失败时记录到文件中，重试线程每30秒读取一次文件
 public class TriggerCallbackThread {
     private static Logger logger = LoggerFactory.getLogger(TriggerCallbackThread.class);
 
+    // 单例模式
     private static TriggerCallbackThread instance = new TriggerCallbackThread();
     public static TriggerCallbackThread getInstance(){
         return instance;
@@ -34,6 +37,7 @@ public class TriggerCallbackThread {
     /**
      * job results callback queue
      */
+    // 先进先出，容量为Integer.MAX_VALUE，相当于无界
     private LinkedBlockingQueue<HandleCallbackParam> callBackQueue = new LinkedBlockingQueue<HandleCallbackParam>();
     public static void pushCallBack(HandleCallbackParam callback){
         getInstance().callBackQueue.add(callback);
@@ -118,6 +122,7 @@ public class TriggerCallbackThread {
 
                     }
                     try {
+                        // 30秒读一次
                         TimeUnit.SECONDS.sleep(RegistryConfig.BEAT_TIMEOUT);
                     } catch (InterruptedException e) {
                         if (!toStop) {
@@ -160,6 +165,7 @@ public class TriggerCallbackThread {
      * do callback, will retry if error
      * @param callbackParamList
      */
+    //
     private void doCallback(List<HandleCallbackParam> callbackParamList){
         boolean callbackRet = false;
         // callback, will retry if error
@@ -204,6 +210,7 @@ public class TriggerCallbackThread {
     private static String failCallbackFilePath = XxlJobFileAppender.getLogPath().concat(File.separator).concat("callbacklog").concat(File.separator);
     private static String failCallbackFileName = failCallbackFilePath.concat("xxl-job-callback-{x}").concat(".log");
 
+    // Callback失败的记录到本地文件
     private void appendFailCallbackFile(List<HandleCallbackParam> callbackParamList){
         // valid
         if (callbackParamList==null || callbackParamList.size()==0) {

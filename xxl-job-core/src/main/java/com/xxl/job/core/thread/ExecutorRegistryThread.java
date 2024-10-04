@@ -43,6 +43,7 @@ public class ExecutorRegistryThread {
                 while (!toStop) {
                     try {
                         RegistryParam registryParam = new RegistryParam(RegistryConfig.RegistType.EXECUTOR.name(), appname, address);
+                        // 任意一个调度平台注册成功即可
                         for (AdminBiz adminBiz: XxlJobExecutor.getAdminBizList()) {
                             try {
                                 ReturnT<String> registryResult = adminBiz.registry(registryParam);
@@ -67,6 +68,7 @@ public class ExecutorRegistryThread {
 
                     try {
                         if (!toStop) {
+                            // 30秒
                             TimeUnit.SECONDS.sleep(RegistryConfig.BEAT_TIMEOUT);
                         }
                     } catch (InterruptedException e) {

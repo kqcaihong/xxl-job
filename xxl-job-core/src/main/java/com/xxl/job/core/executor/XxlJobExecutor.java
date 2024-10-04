@@ -25,6 +25,13 @@ import java.util.concurrent.ConcurrentMap;
 /**
  * Created by xuxueli on 2016/3/2 21:14.
  */
+
+/**
+ * 持有配置
+ * 创建与调度中心通信的客户端，初始化adminBizList
+ * 启动日志清理线程
+ * 启动任务执行完毕后异步回调线程
+ */
 public class XxlJobExecutor  {
     private static final Logger logger = LoggerFactory.getLogger(XxlJobExecutor.class);
 
@@ -68,19 +75,23 @@ public class XxlJobExecutor  {
     public void start() throws Exception {
 
         // init logpath
+        // 创建日志目录，执行日志文件保存在执行器上
         XxlJobFileAppender.initLogPath(logPath);
 
         // init invoker, admin-client
+        // 创建与调度中心通信的客户端，初始化adminBizList
         initAdminBizList(adminAddresses, accessToken);
 
-
         // init JobLogFileCleanThread
+        // 启动日志清理线程，按日志保留天数来删除log文件
         JobLogFileCleanThread.getInstance().start(logRetentionDays);
 
         // init TriggerCallbackThread
+        // 任务执行完毕后异步回调调度平台，基于阻塞队列实现。
         TriggerCallbackThread.getInstance().start();
 
         // init executor-server
+        // 创建netty客户端，向调度平台发起注册
         initEmbedServer(address, ip, port, appname, accessToken);
     }
 
@@ -195,6 +206,7 @@ public class XxlJobExecutor  {
         if (name.trim().length() == 0) {
             throw new RuntimeException("xxl-job method-jobhandler name invalid, for[" + clazz + "#" + methodName + "] .");
         }
+        // name 冲突
         if (loadJobHandler(name) != null) {
             throw new RuntimeException("xxl-job jobhandler[" + name + "] naming conflicts.");
         }

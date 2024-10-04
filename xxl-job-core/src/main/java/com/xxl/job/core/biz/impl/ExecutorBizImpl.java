@@ -19,14 +19,17 @@ import java.util.Date;
 /**
  * Created by xuxueli on 17/3/1.
  */
+// 执行器的业务逻辑
 public class ExecutorBizImpl implements ExecutorBiz {
     private static Logger logger = LoggerFactory.getLogger(ExecutorBizImpl.class);
 
+    // 执行器响应心跳，用于故障转移路由
     @Override
     public ReturnT<String> beat() {
         return ReturnT.SUCCESS;
     }
 
+    // 响应空闲问询，用于忙碌转移路由
     @Override
     public ReturnT<String> idleBeat(IdleBeatParam idleBeatParam) {
 

@@ -17,9 +17,11 @@ import java.util.concurrent.TimeUnit;
  *
  * @author xuxueli 2017-12-29 16:23:43
  */
+// 日志清理线程，按日志保留天数来删除文件
 public class JobLogFileCleanThread {
     private static Logger logger = LoggerFactory.getLogger(JobLogFileCleanThread.class);
 
+    // 单例模式
     private static JobLogFileCleanThread instance = new JobLogFileCleanThread();
     public static JobLogFileCleanThread getInstance(){
         return instance;
@@ -30,6 +32,7 @@ public class JobLogFileCleanThread {
     public void start(final long logRetentionDays){
 
         // limit min value
+        // 小于3天不清理
         if (logRetentionDays < 3 ) {
             return;
         }

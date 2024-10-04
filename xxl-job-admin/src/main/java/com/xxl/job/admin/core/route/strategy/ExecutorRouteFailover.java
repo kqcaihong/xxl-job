@@ -23,6 +23,7 @@ public class ExecutorRouteFailover extends ExecutorRouter {
             ReturnT<String> beatResult = null;
             try {
                 ExecutorBiz executorBiz = XxlJobScheduler.getExecutorBiz(address);
+                // 检查执行器是否在线
                 beatResult = executorBiz.beat();
             } catch (Exception e) {
                 logger.error(e.getMessage(), e);

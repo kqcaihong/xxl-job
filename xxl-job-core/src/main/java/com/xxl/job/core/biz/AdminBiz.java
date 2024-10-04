@@ -9,6 +9,7 @@ import java.util.List;
 /**
  * @author xuxueli 2017-07-27 21:52:49
  */
+// 与调度中心的通信组件
 public interface AdminBiz {
 
 
