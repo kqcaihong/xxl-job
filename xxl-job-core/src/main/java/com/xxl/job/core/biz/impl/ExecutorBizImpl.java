@@ -125,23 +125,27 @@ public class ExecutorBizImpl implements ExecutorBiz {
         if (jobThread != null) {
             ExecutorBlockStrategyEnum blockStrategy = ExecutorBlockStrategyEnum.match(triggerParam.getExecutorBlockStrategy(), null);
             if (ExecutorBlockStrategyEnum.DISCARD_LATER == blockStrategy) {
+                // 正在执行，或队列中有等待的任务，则丢弃本次任务
                 // discard when running
                 if (jobThread.isRunningOrHasQueue()) {
                     return new ReturnT<String>(ReturnT.FAIL_CODE, "block strategy effect："+ExecutorBlockStrategyEnum.DISCARD_LATER.getTitle());
                 }
             } else if (ExecutorBlockStrategyEnum.COVER_EARLY == blockStrategy) {
+                // 正在执行，或队列中有等待的任务，则新建jobThread
                 // kill running jobThread
                 if (jobThread.isRunningOrHasQueue()) {
                     removeOldReason = "block strategy effect：" + ExecutorBlockStrategyEnum.COVER_EARLY.getTitle();
-
+                    // 将新建一个jobThread，正在执行的任务会
                     jobThread = null;
                 }
             } else {
                 // just queue trigger
+                // 任务入队
             }
         }
 
         // replace thread (new or exists invalid)
+        // 首次执行，或长期空闲时，会为null
         if (jobThread == null) {
             jobThread = XxlJobExecutor.registJobThread(triggerParam.getJobId(), jobHandler, removeOldReason);
         }

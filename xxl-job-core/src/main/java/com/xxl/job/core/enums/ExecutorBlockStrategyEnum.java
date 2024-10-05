@@ -5,9 +5,12 @@ package com.xxl.job.core.enums;
  */
 public enum ExecutorBlockStrategyEnum {
 
+    // 入队，顺序执行
     SERIAL_EXECUTION("Serial execution"),
     /*CONCURRENT_EXECUTION("并行"),*/
+    // 丢弃本次任务
     DISCARD_LATER("Discard Later"),
+    // 覆盖前面等待的任务
     COVER_EARLY("Cover Early");
 
     private String title;

@@ -21,7 +21,8 @@ import java.util.concurrent.*;
  */
 public class JobCompleteHelper {
 	private static Logger logger = LoggerFactory.getLogger(JobCompleteHelper.class);
-	
+
+	// 单例模式
 	private static JobCompleteHelper instance = new JobCompleteHelper();
 	public static JobCompleteHelper getInstance(){
 		return instance;
@@ -151,6 +152,7 @@ public class JobCompleteHelper {
 		return ReturnT.SUCCESS;
 	}
 
+	// 只是追加结果日志
 	private ReturnT<String> callback(HandleCallbackParam handleCallbackParam) {
 		// valid log item
 		XxlJobLog log = XxlJobAdminConfig.getAdminConfig().getXxlJobLogDao().load(handleCallbackParam.getLogId());

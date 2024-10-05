@@ -22,8 +22,9 @@ import org.slf4j.LoggerFactory;
 /**
  * Created by xuxueli on 16/7/22.
  */
-// 执行完毕后异步回调调度平台，基于阻塞队列实现。有两个守护线程：首次回调线程、失败重试线程
-// 批量回调，通知到每一个调度平台实例
+// 执行完毕后异步回调调度平台，基于阻塞队列实现。
+// 有两个守护线程：首次回调线程、失败重试线程
+// 批量回调，通知到任一个调度平台实例
 // 回调失败时记录到文件中，重试线程每30秒读取一次文件
 public class TriggerCallbackThread {
     private static Logger logger = LoggerFactory.getLogger(TriggerCallbackThread.class);
@@ -210,7 +211,7 @@ public class TriggerCallbackThread {
     private static String failCallbackFilePath = XxlJobFileAppender.getLogPath().concat(File.separator).concat("callbacklog").concat(File.separator);
     private static String failCallbackFileName = failCallbackFilePath.concat("xxl-job-callback-{x}").concat(".log");
 
-    // Callback失败的记录到本地文件
+    // Callback失败时，将消息记录到本地文件
     private void appendFailCallbackFile(List<HandleCallbackParam> callbackParamList){
         // valid
         if (callbackParamList==null || callbackParamList.size()==0) {

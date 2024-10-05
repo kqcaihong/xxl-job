@@ -28,14 +28,18 @@ public class JobThread extends Thread{
 	private static Logger logger = LoggerFactory.getLogger(JobThread.class);
 
 	private int jobId;
+	// 任务体
 	private IJobHandler handler;
+	// 任务队列
 	private LinkedBlockingQueue<TriggerParam> triggerQueue;
+	// 避免对同一个TRIGGER_LOG_ID重复触发
 	private Set<Long> triggerLogIdSet;		// avoid repeat trigger for the same TRIGGER_LOG_ID
 
 	private volatile boolean toStop = false;
 	private String stopReason;
 
     private boolean running = false;    // if running job
+	// while空转次数
 	private int idleTimes = 0;			// idel times
 
 
@@ -60,6 +64,7 @@ public class JobThread extends Thread{
      */
 	public ReturnT<String> pushTriggerQueue(TriggerParam triggerParam) {
 		// avoid repeat
+		// 重复请求不入队，直接响应失败
 		if (triggerLogIdSet.contains(triggerParam.getLogId())) {
 			logger.info(">>>>>>>>>>> repeate trigger job, logId:{}", triggerParam.getLogId());
 			return new ReturnT<String>(ReturnT.FAIL_CODE, "repeate trigger job, logId:" + triggerParam.getLogId());
@@ -111,9 +116,11 @@ public class JobThread extends Thread{
             TriggerParam triggerParam = null;
             try {
 				// to check toStop signal, we need cycle, so wo cannot use queue.take(), instand of poll(timeout)
+							// 非阻塞的，如果没有则返回null
 				triggerParam = triggerQueue.poll(3L, TimeUnit.SECONDS);
 				if (triggerParam!=null) {
 					running = true;
+					// 只要执行一次，就重置空闲计数
 					idleTimes = 0;
 					triggerLogIdSet.remove(triggerParam.getLogId());
 
@@ -132,6 +139,7 @@ public class JobThread extends Thread{
 					// execute
 					XxlJobHelper.log("<br>----------- xxl-job job execute start -----------<br>----------- Param:" + xxlJobContext.getJobParam());
 
+					// 带超时时间的任务，另起线程，包装为FutureTask
 					if (triggerParam.getExecutorTimeout() > 0) {
 						// limit timeout
 						Thread futureThread = null;
@@ -183,6 +191,7 @@ public class JobThread extends Thread{
 					);
 
 				} else {
+					// while连续空转30次，即90秒，终止jobThread，释放资源（可能任务已被关闭，或者执行周期较长）
 					if (idleTimes > 30) {
 						if(triggerQueue.size() == 0) {	// avoid concurrent trigger causes jobId-lost
 							XxlJobExecutor.removeJobThread(jobId, "excutor idel times over limit.");
@@ -214,6 +223,7 @@ public class JobThread extends Thread{
 								XxlJobContext.getXxlJobContext().getHandleMsg() )
 						);
                     } else {
+												// 任务被kill
                         // is killed
                         TriggerCallbackThread.pushCallBack(new HandleCallbackParam(
                         		triggerParam.getLogId(),
@@ -227,6 +237,7 @@ public class JobThread extends Thread{
         }
 
 		// callback trigger request in queue
+			// 移除队列中等待任务，回调失败的结果
 		while(triggerQueue !=null && triggerQueue.size()>0){
 			TriggerParam triggerParam = triggerQueue.poll();
 			if (triggerParam!=null) {
