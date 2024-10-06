@@ -41,6 +41,7 @@ public class JobAlarmer implements ApplicationContextAware, InitializingBean {
      * @param jobLog
      * @return
      */
+    // 所有通道都通知成功，才返回true
     public boolean alarm(XxlJobInfo info, XxlJobLog jobLog) {
 
         boolean result = false;
