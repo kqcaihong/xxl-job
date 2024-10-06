@@ -57,10 +57,12 @@ public class XxlJobTrigger {
         if (executorParam != null) {
             jobInfo.setExecutorParam(executorParam);
         }
+        // 表中executorFailRetryCount默认为0
         int finalFailRetryCount = failRetryCount>=0?failRetryCount:jobInfo.getExecutorFailRetryCount();
         XxlJobGroup group = XxlJobAdminConfig.getAdminConfig().getXxlJobGroupDao().load(jobInfo.getJobGroup());
 
         // cover addressList
+        // 手动录入时
         if (addressList!=null && addressList.trim().length()>0) {
             group.setAddressType(1);
             group.setAddressList(addressList.trim());
@@ -79,11 +81,13 @@ public class XxlJobTrigger {
         if (ExecutorRouteStrategyEnum.SHARDING_BROADCAST==ExecutorRouteStrategyEnum.match(jobInfo.getExecutorRouteStrategy(), null)
                 && group.getRegistryList()!=null && !group.getRegistryList().isEmpty()
                 && shardingParam==null) {
+            // 分片广播，调度执行器的每个实例
             for (int i = 0; i < group.getRegistryList().size(); i++) {
                 processTrigger(group, jobInfo, finalFailRetryCount, triggerType, i, group.getRegistryList().size());
             }
         } else {
             if (shardingParam == null) {
+                // 分片索引为0，分片总数为1
                 shardingParam = new int[]{0, 1};
             }
             processTrigger(group, jobInfo, finalFailRetryCount, triggerType, shardingParam[0], shardingParam[1]);

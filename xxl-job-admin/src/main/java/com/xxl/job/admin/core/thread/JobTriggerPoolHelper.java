@@ -14,6 +14,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  *
  * @author xuxueli 2018-07-03 21:08:07
  */
+// 提供了两个快慢线程池，基于一分钟内Trigger耗时的统计，决定使用哪个
 public class JobTriggerPoolHelper {
     private static Logger logger = LoggerFactory.getLogger(JobTriggerPoolHelper.class);
 
@@ -27,6 +28,7 @@ public class JobTriggerPoolHelper {
     public void start(){
         fastTriggerPool = new ThreadPoolExecutor(
                 10,
+                // 默认200
                 XxlJobAdminConfig.getAdminConfig().getTriggerPoolFastMax(),
                 60L,
                 TimeUnit.SECONDS,
@@ -40,6 +42,7 @@ public class JobTriggerPoolHelper {
 
         slowTriggerPool = new ThreadPoolExecutor(
                 10,
+                // 默认100
                 XxlJobAdminConfig.getAdminConfig().getTriggerPoolSlowMax(),
                 60L,
                 TimeUnit.SECONDS,
@@ -62,7 +65,9 @@ public class JobTriggerPoolHelper {
 
 
     // job timeout count
+    // 时间戳，单位是分钟
     private volatile long minTim = System.currentTimeMillis()/60000;     // ms > min
+    // key是jobId，value是超时计数
     private volatile ConcurrentMap<Integer, AtomicInteger> jobTimeoutCountMap = new ConcurrentHashMap<>();
 
 
@@ -79,6 +84,7 @@ public class JobTriggerPoolHelper {
         // choose thread pool
         ThreadPoolExecutor triggerPool_ = fastTriggerPool;
         AtomicInteger jobTimeoutCount = jobTimeoutCountMap.get(jobId);
+        // 1分钟超时10次以上，使用slowTriggerPool
         if (jobTimeoutCount!=null && jobTimeoutCount.get() > 10) {      // job-timeout 10 times in 1 min
             triggerPool_ = slowTriggerPool;
         }
@@ -98,7 +104,8 @@ public class JobTriggerPoolHelper {
                 } finally {
 
                     // check timeout-count-map
-                    long minTim_now = System.currentTimeMillis()/60000;
+                    // 每分钟进行重置
+                    long minTim_now = System.currentTimeMillis()/60000;  // 向下取整的
                     if (minTim != minTim_now) {
                         minTim = minTim_now;
                         jobTimeoutCountMap.clear();
@@ -106,6 +113,7 @@ public class JobTriggerPoolHelper {
 
                     // incr timeout-count-map
                     long cost = System.currentTimeMillis()-start;
+                    // trigger 耗时大于500ms，即认为超时了，计数加1
                     if (cost > 500) {       // ob-timeout threshold 500ms
                         AtomicInteger timeoutCount = jobTimeoutCountMap.putIfAbsent(jobId, new AtomicInteger(1));
                         if (timeoutCount != null) {

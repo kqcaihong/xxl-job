@@ -21,7 +21,7 @@ public class XxlJobScheduler  {
 
 
     public void init() throws Exception {
-        // init i18n
+        // init i18n  国际化
         initI18n();
 
         // admin trigger pool start
@@ -77,7 +77,9 @@ public class XxlJobScheduler  {
     }
 
     // ---------------------- executor-client ----------------------
+    // key是执行器地址，value是ExecutorBizClient
     private static ConcurrentMap<String, ExecutorBiz> executorBizRepository = new ConcurrentHashMap<String, ExecutorBiz>();
+    // 用address查找ExecutorBiz，没有则创建，并放入executorBizRepository
     public static ExecutorBiz getExecutorBiz(String address) throws Exception {
         // valid
         if (address==null || address.trim().length()==0) {

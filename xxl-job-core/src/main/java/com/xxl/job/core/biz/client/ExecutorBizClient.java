@@ -24,9 +24,10 @@ public class ExecutorBizClient implements ExecutorBiz {
         }
     }
 
-    // 执行器地址
+    // 执行器实例的地址
     private String addressUrl ;
     private String accessToken;
+    // ReadTimeout取3秒
     private int timeout = 3;
 
 
@@ -40,6 +41,7 @@ public class ExecutorBizClient implements ExecutorBiz {
         return XxlJobRemotingUtil.postBody(addressUrl+"idleBeat", accessToken, timeout, idleBeatParam, String.class);
     }
 
+    // 发送http请求
     @Override
     public ReturnT<String> run(TriggerParam triggerParam) {
         return XxlJobRemotingUtil.postBody(addressUrl + "run", accessToken, timeout, triggerParam, String.class);

@@ -160,6 +160,7 @@ public class ExecutorBizImpl implements ExecutorBiz {
         // kill handlerThread, and create new one
         JobThread jobThread = XxlJobExecutor.loadJobThread(killParam.getJobId());
         if (jobThread != null) {
+            // toStop和中断
             XxlJobExecutor.removeJobThread(killParam.getJobId(), "scheduling center kill job.");
             return ReturnT.SUCCESS;
         }
