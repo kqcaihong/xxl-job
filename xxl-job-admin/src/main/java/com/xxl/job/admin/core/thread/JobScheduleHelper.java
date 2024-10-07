@@ -19,7 +19,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * @author xuxueli 2019-05-21
  */
-// todo 不知道时钟回拨，是否会造成影响
+// todo 不知道时钟回拨，是否会造成影响？应该没影响
 // 只支持配置到秒级别
 // 假设任务从0点起每12小时执行一次，启动时是1点，得等11小时才首次执行。使用MisfireStrategyEnum.FIRE_ONCE_NOW
 // 两个线程，扫描周期不同，查库是长周期，短周期只操作内存，这样的设计是可取的
@@ -48,7 +48,7 @@ public class JobScheduleHelper {
     private Thread ringThread;
     private volatile boolean scheduleThreadToStop = false;
     private volatile boolean ringThreadToStop = false;
-    // key是秒数（60以内的数字），value是jobId集合
+    // key是秒数（60以内的数字），value是jobId集合，时间轮
     private volatile static Map<Integer, List<Integer>> ringData = new ConcurrentHashMap<>();
 
     public void start(){
@@ -59,7 +59,7 @@ public class JobScheduleHelper {
             public void run() {
 
                 try {
-                    // 5*N秒处运行
+                    // 整秒处运行，两次间隔最多5秒
                     TimeUnit.MILLISECONDS.sleep(5000 - System.currentTimeMillis()%1000 );
                 } catch (InterruptedException e) {
                     if (!scheduleThreadToStop) {
@@ -69,7 +69,7 @@ public class JobScheduleHelper {
                 logger.info(">>>>>>>>> init xxl-job admin scheduler success.");
 
                 // pre-read count: treadpool-size * trigger-qps (each trigger cost 500ms, qps = 1000/500 = 20)
-                // 用最大线程数计算，preReadCount结果偏大。300*20，依然有风险
+                // 用最大线程数计算，preReadCount结果偏大，默认为300*20=6000
                 int preReadCount = (XxlJobAdminConfig.getAdminConfig().getTriggerPoolFastMax() + XxlJobAdminConfig.getAdminConfig().getTriggerPoolSlowMax()) * 20;
 
                 while (!scheduleThreadToStop) {
@@ -88,7 +88,7 @@ public class JobScheduleHelper {
                         connAutoCommit = conn.getAutoCommit();
                         conn.setAutoCommit(false);
 
-                        // 加DB锁，防止集群下并发
+                        // 加表的行锁，防止集群下并发
                         preparedStatement = conn.prepareStatement(  "select * from xxl_job_lock where lock_name = 'schedule_lock' for update" );
                         preparedStatement.execute();
 
@@ -96,7 +96,7 @@ public class JobScheduleHelper {
 
                         // 1、pre read
                         long nowTime = System.currentTimeMillis();
-                        // trigger_next_time< 5秒后的任务，可能是已过点、未过点
+                        // trigger_next_time< now + 5的任务，可能是已过点、未过点
                         List<XxlJobInfo> scheduleList = XxlJobAdminConfig.getAdminConfig().getXxlJobInfoDao().scheduleJobQuery(nowTime + PRE_READ_MS, preReadCount);
                         if (scheduleList!=null && scheduleList.size()>0) {
                             // 2、push time-ring
@@ -148,7 +148,7 @@ public class JobScheduleHelper {
                                     // 未到点
                                     // 2.3、trigger-pre-read：time-ring trigger && make next-trigger-time
 
-                                    // 1、make ring second
+                                    // 1、make ring second，余数即某分钟的第几秒
                                     int ringSecond = (int)((jobInfo.getTriggerNextTime()/1000)%60);
 
                                     // 2、push time ring
@@ -248,7 +248,7 @@ public class JobScheduleHelper {
                 while (!ringThreadToStop) {
 
                     // align second
-                    // 整秒执行，1秒内最多执行一次
+                    // 整秒处运行，两次间隔最多1秒，1秒内最多执行一次
                     try {
                         TimeUnit.MILLISECONDS.sleep(1000 - System.currentTimeMillis() % 1000);
                     } catch (InterruptedException e) {
@@ -260,7 +260,7 @@ public class JobScheduleHelper {
                     try {
                         // second data
                         List<Integer> ringItemData = new ArrayList<>();
-                        // 由于trigger仅提交给线程池，耗时很小；向前查找1秒，应该足够了。
+                        // 由于trigger仅提交给线程池，耗时很小；向前多查找1秒，应该足够了。
                         int nowSecond = Calendar.getInstance().get(Calendar.SECOND);   // 避免处理耗时太长，跨过刻度，向前校验一个刻度；
                         for (int i = 0; i < 2; i++) {
                             // 加60，为了避免减i后变成负数
