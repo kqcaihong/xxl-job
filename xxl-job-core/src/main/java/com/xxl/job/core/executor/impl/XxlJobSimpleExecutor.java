@@ -17,6 +17,7 @@ import java.util.Map;
  *
  * @author xuxueli 2020-11-05
  */
+// 无框架时实现
 public class XxlJobSimpleExecutor extends XxlJobExecutor {
     private static final Logger logger = LoggerFactory.getLogger(XxlJobSimpleExecutor.class);
 
