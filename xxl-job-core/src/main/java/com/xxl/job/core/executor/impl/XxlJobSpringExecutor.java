@@ -54,6 +54,8 @@ public class XxlJobSpringExecutor extends XxlJobExecutor implements ApplicationC
     // destroy
     @Override
     public void destroy() {
+        // 停止netty，中断所有jobThread、LogFileCleanThread、TriggerCallbackThread
+        // 释放全局资源
         super.destroy();
     }
 
