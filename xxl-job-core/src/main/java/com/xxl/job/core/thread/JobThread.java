@@ -101,7 +101,7 @@ public class JobThread extends Thread{
     @Override
 	public void run() {
 
-    	// init
+    	// 只执行一次
     	try {
 			handler.init();
 		} catch (Throwable e) {
