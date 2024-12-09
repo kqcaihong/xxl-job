@@ -1,24 +1,22 @@
 package com.xxl.job.executor.sample.frameless.jobhandler;
 
-import com.xxl.job.core.handler.IJobHandler;
+import com.xxl.job.core.handler.annotation.XxlJob;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class CacheRefreshJob extends IJobHandler {
+public class CacheRefreshJob2 {
 
   // local cache
   public static volatile Map<Integer, Object> CACHE = new HashMap<>();
 
-  @Override
   public void init() throws Exception {
-    // 初始化缓存
-    execute();
+    refreshCache();
   }
 
-  @Override
-  public void execute() throws Exception {
+  @XxlJob(value = "cacheRefreshJob", init = "init", destroy = "destroy")
+  public void refreshCache() throws Exception {
     List<Object> dataList = loadData();
     Map<Integer, Object> temporaryMap = new HashMap<>();
     for (Object data : dataList) {
@@ -32,12 +30,11 @@ public class CacheRefreshJob extends IJobHandler {
     return new ArrayList<>();
   }
 
-  public Object query(Integer key) {
-    return CACHE.get(key);
-  }
-
-  @Override
   public void destroy() throws Exception {
     CACHE.clear();
+  }
+
+  public Object query(Integer key) {
+    return CACHE.get(key);
   }
 }

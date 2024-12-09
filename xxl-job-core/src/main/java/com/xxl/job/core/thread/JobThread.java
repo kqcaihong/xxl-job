@@ -101,9 +101,9 @@ public class JobThread extends Thread{
     @Override
 	public void run() {
 
-    	// 只执行一次
     	try {
-			handler.init();
+				// 只被线程执行一次
+				handler.init();
 		} catch (Throwable e) {
     		logger.error(e.getMessage(), e);
 		}
@@ -253,6 +253,7 @@ public class JobThread extends Thread{
 
 		// destroy
 		try {
+			// 只被线程执行一次
 			handler.destroy();
 		} catch (Throwable e) {
 			logger.error(e.getMessage(), e);

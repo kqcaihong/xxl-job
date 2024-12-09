@@ -64,13 +64,11 @@ public class XxlJobSimpleExecutor extends XxlJobExecutor {
                 continue;
             }
             for (Method executeMethod : methods) {
+                 // 将@XxlJob封装为MethodJobHandler
                 XxlJob xxlJob = executeMethod.getAnnotation(XxlJob.class);
                 // registry
                 registJobHandler(xxlJob, bean, executeMethod);
             }
-
         }
-
     }
-
 }

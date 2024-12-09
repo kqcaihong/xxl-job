@@ -145,7 +145,7 @@ public class ExecutorBizImpl implements ExecutorBiz {
         }
 
         // replace thread (new or exists invalid)
-        // 首次执行，或长期空闲时，会为null
+        // 首次执行，或长期空闲时，或者使用ExecutorBlockStrategyEnum.COVER_EARLY且jobThread.isRunningOrHasQueue时，会为null
         if (jobThread == null) {
             jobThread = XxlJobExecutor.registJobThread(triggerParam.getJobId(), jobHandler, removeOldReason);
         }
