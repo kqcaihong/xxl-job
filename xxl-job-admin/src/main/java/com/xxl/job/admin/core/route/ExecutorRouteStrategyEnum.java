@@ -6,6 +6,7 @@ import com.xxl.job.admin.core.util.I18nUtil;
 /**
  * Created by xuxueli on 17/3/10.
  */
+// 初始化路由实例，单例的
 public enum ExecutorRouteStrategyEnum {
 
     FIRST(I18nUtil.getString("jobconf_route_first"), new ExecutorRouteFirst()),
